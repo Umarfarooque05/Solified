@@ -47,11 +47,11 @@ export default function Hero() {
               </Button>
             </div>
 
-            <div className="pt-4">
+            {/* <div className="pt-4">
               <Badge variant="secondary" className="text-sm px-4 py-2">
                 25+ Years Combined Expertise
               </Badge>
-            </div>
+            </div> */}
           </div>
 
           <div className="lg:col-span-2">

@@ -5,14 +5,39 @@ import { Menu, X, Moon, Sun } from "lucide-react";
 
 export default function Header() {
   const [location] = useLocation();
+  const [activeSection, setActiveSection] = useState<string>("/");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
+  const navItems = [
+    { label: "Home", path: "/" },
+    { label: "Services", path: "#services" },
+    { label: "Projects", path: "#projects" },
+    { label: "About", path: "#about" },
+    { label: "Contact", path: "#contact" },
+  ];
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+
+      // Detect which section is visible while scrolling
+      let current = "/";
+      navItems.forEach((item) => {
+        if (item.path.startsWith("#")) {
+          const section = document.querySelector(item.path);
+          if (section) {
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= 100 && rect.bottom >= 100) {
+              current = item.path;
+            }
+          }
+        }
+      });
+      setActiveSection(current);
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -32,23 +57,22 @@ export default function Header() {
     document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
-  const navItems = [
-    { label: "Home", path: "/" },
-    { label: "Services", path: "#services" },
-    { label: "Projects", path: "#projects" },
-    { label: "About", path: "#about" },
-    { label: "Contact", path: "#contact" },
-  ];
-
   const handleNavClick = (path: string) => {
-    if (path.startsWith("#")) {
-      const element = document.querySelector(path);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
+  if (path === "/") {
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setActiveSection("/");
+  } else if (path.startsWith("#")) {
+    const element = document.querySelector(path);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
     }
-    setIsMobileMenuOpen(false);
-  };
+    setActiveSection(path);
+  }
+
+  setIsMobileMenuOpen(false);
+};
+
 
   return (
     <header
@@ -60,70 +84,58 @@ export default function Header() {
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" data-testid="link-home">
+          <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer">
               <div className="text-2xl font-bold text-primary">SOLIFIED</div>
             </div>
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => handleNavClick(item.path)}
-                data-testid={`link-${item.label.toLowerCase()}`}
-                className={`px-4 py-2 text-sm font-medium uppercase tracking-wide transition-colors hover-elevate active-elevate-2 rounded-md ${
-                  location === item.path
-                    ? "text-primary"
-                    : "text-foreground/80"
-                }`}
+                className={`px-4 py-2 text-sm font-medium uppercase tracking-wide transition-colors rounded-md
+                  ${
+                    activeSection === item.path
+                      ? "text-primary"
+                      : "text-foreground/80 hover:text-foreground"
+                  }`}
               >
                 {item.label}
               </button>
             ))}
           </nav>
 
+          {/* Buttons */}
           <div className="flex items-center gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={toggleTheme}
-              data-testid="button-theme-toggle"
-              className="hidden md:flex"
-            >
-              {theme === "light" ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
+            <Button size="icon" variant="ghost" onClick={toggleTheme} className="hidden md:flex">
+              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </Button>
 
             <Button
               variant="default"
               className="hidden md:flex"
               onClick={() => handleNavClick("#contact")}
-              data-testid="button-contact-header"
             >
               Get in Touch
             </Button>
 
+            {/* Mobile Menu Toggle */}
             <Button
               size="icon"
               variant="ghost"
               className="md:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              data-testid="button-mobile-menu"
             >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
         </div>
       </div>
 
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-background border-b">
           <nav className="px-6 py-4 space-y-2">
@@ -131,31 +143,21 @@ export default function Header() {
               <button
                 key={item.path}
                 onClick={() => handleNavClick(item.path)}
-                data-testid={`link-mobile-${item.label.toLowerCase()}`}
-                className="block w-full text-left px-4 py-3 text-sm font-medium uppercase tracking-wide hover-elevate active-elevate-2 rounded-md"
+                className={`block w-full text-left px-4 py-3 text-sm font-medium uppercase tracking-wide rounded-md
+                  ${
+                    activeSection === item.path
+                      ? "text-amber-500 font-semibold"
+                      : "text-foreground/80 hover:text-foreground"
+                  }`}
               >
                 {item.label}
               </button>
             ))}
             <div className="pt-2 flex items-center gap-2">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={toggleTheme}
-                className="flex-shrink-0"
-                data-testid="button-mobile-theme-toggle"
-              >
-                {theme === "light" ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
+              <Button size="icon" variant="ghost" onClick={toggleTheme} className="flex-shrink-0">
+                {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
-              <Button
-                className="flex-1"
-                onClick={() => handleNavClick("#contact")}
-                data-testid="button-mobile-contact"
-              >
+              <Button className="flex-1" onClick={() => handleNavClick("#contact")}>
                 Get in Touch
               </Button>
             </div>

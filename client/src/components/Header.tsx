@@ -146,7 +146,7 @@ export default function Header() {
                 className={`block w-full text-left px-4 py-3 text-sm font-medium uppercase tracking-wide rounded-md
                   ${
                     activeSection === item.path
-                      ? "text-amber-500 font-semibold"
+                      ? "text-primary"
                       : "text-foreground/80 hover:text-foreground"
                   }`}
               >
